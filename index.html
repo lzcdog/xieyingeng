@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>谐音梗展示</title>
+    <style>
+        :root {
+            --bg-color: #E6F4FB;
+            --card-bg: #FFFFFF;
+            --answer-bg: #90C988;
+            --answer-text: #FFFFFF;
+            --text-main: #333333;
+            --text-secondary: #666666;
+            --btn-bg: #F0F0F0;
+            --btn-hover: #E0E0E0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3vw;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            background: var(--card-bg);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .image-wrapper {
+            flex: 1;
+            width: 100%;
+            margin: 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            border-radius: 24px;
+        }
+
+        .image-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        /* 隐藏图片，显示答案的过渡状态 */
+        .image-wrapper.show-answer img {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .answer-box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--answer-bg);
+            color: var(--answer-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+        }
+
+        .image-wrapper.show-answer .answer-box {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .answer-content {
+            font-size: clamp(4rem, 8vw, 8rem);
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            text-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 30px;
+            flex-shrink: 0;
+        }
+
+        button {
+            flex: 1;
+            padding: 25px 0;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-main);
+            background: var(--btn-bg);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        button:hover {
+            background: var(--btn-hover);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        button.primary {
+            background: #FFD166;
+            color: #333;
+        }
+
+        button.primary:hover {
+            background: #FFC233;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <span>谐音梗猜猜看</span>
+            <span id="progress">1 / 30</span>
+        </div>
+
+        <div class="image-wrapper" id="main-wrapper">
+            <img id="game-image" src="" alt="谐音梗图片">
+            <div class="answer-box">
+                <div id="answer-content" class="answer-content">答案</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="prev-btn" onclick="prevQuestion()">上一题</button>
+            <button class="primary" id="toggle-btn" onclick="toggleAnswer()">查看答案</button>
+            <button id="next-btn" onclick="nextQuestion()">下一题</button>
+        </div>
+    </div>
+
+    <script>
+        const imageFiles = [
+            "一生一世.png", "会计师.jpeg", "冰淇淋.png", "名不虚传.png", 
+            "告白气球.png", "周瑜.png", "圆周率.png", "好久不见.png", 
+            "小心翼翼.png", "小红书.png", "帅锅.png", "平安夜.png", 
+            "强强联手.png", "恩重如山.png", "恭喜发财.png", "手机壳.png", 
+            "打工仔.png", "摄像机.png", "板上钉钉.png", "没关系.png", 
+            "离谱.png", "程序员.png", "绷不住了.png", "胡椒粉.png", 
+            "胡说八道.png", "设计师.png", "路由器.png", "霸王茶姬.png", 
+            "马来西亚.png", "高速公路.png"
+        ];
+
+        let questions = [];
+        let currentIndex = 0;
+        let isAnswerShown = false;
+
+        function initGame() {
+            questions = imageFiles.map(file => {
+                const answer = file.split('.')[0];
+                return { file, answer };
+            });
+
+            questions.sort(() => Math.random() - 0.5);
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentIndex];
+            document.getElementById('game-image').src = `./${q.file}`;
+            document.getElementById('answer-content').innerText = q.answer;
+            
+            hideAnswer();
+            updateUI();
+        }
+
+        function toggleAnswer() {
+            if (isAnswerShown) {
+                hideAnswer();
+            } else {
+                showAnswer();
+            }
+        }
+
+        function showAnswer() {
+            document.getElementById('main-wrapper').classList.add('show-answer');
+            document.getElementById('toggle-btn').innerText = '隐藏答案';
+            isAnswerShown = true;
+        }
+
+        function hideAnswer() {
+            document.getElementById('main-wrapper').classList.remove('show-answer');
+            document.getElementById('toggle-btn').innerText = '查看答案';
+            isAnswerShown = false;
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadQuestion();
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('progress').innerText = `${currentIndex + 1} / ${questions.length}`;
+            document.getElementById('prev-btn').disabled = currentIndex === 0;
+            document.getElementById('next-btn').disabled = currentIndex === questions.length - 1;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextQuestion();
+            if (e.key === 'ArrowLeft') prevQuestion();
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                toggleAnswer();
+            }
+        });
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
