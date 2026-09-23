@@ -217,7 +217,7 @@
 
         function loadQuestion() {
             const q = questions[currentIndex];
-            document.getElementById('game-image').src = `./${q.file}`;
+            document.getElementById('game-image').src = `https://lzc-1305165225.cos.ap-guangzhou.myqcloud.com/${q.file}`;
             document.getElementById('answer-content').innerText = q.answer;
             
             hideAnswer();
